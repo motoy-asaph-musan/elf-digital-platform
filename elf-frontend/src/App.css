@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+@theme {
+  /* Define ELF Brand Colors */
+  --color-elf-teal: #008080;
+  --color-elf-charcoal: #333333;
+  --color-elf-teal-hover: #006666;
+  --color-elf-gray: #f9fafb;
+
+  /* Custom Transitions/Fonts if needed */
+  --font-inter: "Inter", ui-sans-serif, system-ui;
+}
+
+@layer base {
+  body, html {
+    margin: 0;
+    padding: 0;
+    /* Apply the background using the new variable */
+    background-color: var(--color-elf-gray);
+    color: var(--color-elf-charcoal);
+  }
+
+  /* Reset the Vite default root centering */
+  #root {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    text-align: left; /* Fixes the 'everything is centered' issue from Capture3.PNG */
+  }
+
+  /* Ensure all links don't have that default blue underlined look unless you want it */
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+}

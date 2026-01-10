@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Add your custom brand colors here if you haven't already */
+@layer base {
+  :root {
+    --elf-teal: #008080;
+    --elf-charcoal: #333333;
+  }
+}

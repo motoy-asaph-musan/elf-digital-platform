@@ -1,0 +1,209 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- USER & AUTH SECTION ---
+
+model User {
+  id            String    @id @default(uuid()) // Changed to String/UUID for consistency
+  email         String    @unique
+  name          String?
+  password      String
+  role          Role      @default(STUDENT)
+  createdAt     DateTime  @default(now())
+  
+  // Relations
+  studentProfile Student?
+  schoolId       String?
+  school         School?  @relation("SchoolToUsers", fields: [schoolId], references: [id])
+  payments       Payment[]
+}
+
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+  COORDINATOR
+}
+
+// --- SCHOOL & SUBSCRIPTION SECTION ---
+
+model School {
+  id               String    @id @default(uuid())
+  name             String
+  address          String
+  region           String?   // Central, Eastern, Western, Northern
+  isRegistered     Boolean   @default(false)
+  registrationDate DateTime?
+  
+  // Relations
+  users            User[]    @relation("SchoolToUsers")
+  payments         Payment[]
+}
+
+// --- EXAM & CONTENT SECTION ---
+
+model Exam {
+  id              String       @id @default(uuid())
+  title           String
+  description     String?
+  durationMinutes Int
+  category        ExamCategory
+  startTime       DateTime
+  endTime         DateTime
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // Relations
+  questions       Question[]
+  sessions        ExamSession[]
+}
+
+enum ExamCategory {
+  UPPER_PRIMARY
+  O_LEVEL
+  A_LEVEL
+}
+
+model Question {
+  id            String       @id @default(uuid())
+  text          String       @db.Text
+  mediaUrl      String?
+  mediaType     String?      // 'IMAGE' or 'VIDEO'
+  points        Int          @default(1)
+  type          QuestionType @default(MULTIPLE_CHOICE)
+  
+  // For Multiple Choice
+  options       Json?        // ["Option A", "Option B"]
+  correctAnswer String
+
+  // Relations
+  examId        String
+  exam          Exam         @relation(fields: [examId], references: [id], onDelete: Cascade)
+  answers       Answer[]     // Added missing back-relation
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  SHORT_ANSWER
+  ESSAY
+}
+
+// --- STUDENT PERFORMANCE SECTION ---
+
+model Student {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  grade       String   // e.g. "P.7" or "S.4"
+  indexNumber String   @unique
+  totalPoints Int      @default(0)
+  isEligible  Boolean  @default(true)
+  
+  // Relations
+  sessions    ExamSession[]
+}
+
+model ExamSession {
+  id             String           @id @default(uuid())
+  examId         String
+  exam           Exam             @relation(fields: [examId], references: [id])
+  studentId      String
+  student        Student          @relation(fields: [studentId], references: [id])
+  startedAt      DateTime         @default(now())
+  deadlineAt     DateTime
+  submittedAt    DateTime?
+  status         SubmissionStatus @default(IN_PROGRESS)
+  score          Int?
+  deviceId       String?
+
+  // Relations
+  responses      Answer[]
+
+  @@unique([examId, studentId])
+}
+
+model Answer {
+  id             String      @id @default(uuid())
+  sessionId      String
+  session        ExamSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  questionId     String
+  question       Question    @relation(fields: [questionId], references: [id])
+  value          String      @db.Text
+  pointsEarned   Int         @default(0)
+  isGraded       Boolean     @default(false)
+  teacherComment String?
+  createdAt      DateTime    @default(now())
+
+  @@unique([sessionId, questionId])
+}
+
+// --- FINANCIAL SECTION ---
+
+model Payment {
+  id            String          @id @default(uuid())
+  amount        Float
+  currency      String          @default("UGX")
+  purpose       String          // "SCHOOL_REG", "CONTEST_FEE", "DONATION"
+  status        PaymentStatus   @default(PENDING)
+  provider      PaymentProvider
+  reference     String          @unique // External ID (Bank Ref or Mobile Money Ref)
+  whatsappRef   String?         // Reference provided via WhatsApp for manual verification
+  
+  // Relations
+  userId        String?
+  user          User?           @relation(fields: [userId], references: [id])
+  schoolId      String?
+  school        School?         @relation(fields: [schoolId], references: [id])
+  
+  donation      Donation?
+  subscription  Subscription?
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+enum PaymentProvider {
+  MTN
+  AIRTEL
+  VISA
+  FLUTTERWAVE
+  BANK_DEPOSIT // Added for manual ELF verification
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  VERIFIED // For manual admin verification
+  FAILED
+}
+
+model Donation {
+  id        String  @id @default(uuid())
+  paymentId String  @unique
+  payment   Payment @relation(fields: [paymentId], references: [id])
+  campaign  String?
+  message   String?
+}
+
+model Subscription {
+  id        String   @id @default(uuid())
+  paymentId String   @unique
+  payment   Payment  @relation(fields: [paymentId], references: [id])
+  plan      String
+  startDate DateTime
+  endDate   DateTime
+  active    Boolean  @default(true)
+}
+
+enum SubmissionStatus {
+  IN_PROGRESS
+  SUBMITTED
+  EXPIRED
+}
