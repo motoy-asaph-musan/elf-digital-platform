@@ -38,6 +38,8 @@ model School {
   name             String
   address          String
   region           String?   // Central, Eastern, Western, Northern
+  contactPhone     String?   // Added: To know where to send the SMS
+  schoolCode       String?   @unique // Added: The 6-digit access code
   isRegistered     Boolean   @default(false)
   registrationDate DateTime?
   

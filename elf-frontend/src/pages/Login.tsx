@@ -7,15 +7,17 @@ import { FaFacebook } from 'react-icons/fa6';
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(true);
-  
-  // Changed "phone" to "identifier" to support both email and phone
   const [credentials, setCredentials] = useState({ identifier: '', password: '' });
 
   useEffect(() => {
     const checkExistingSession = async () => {
       try {
         const user = await fetchUser();
-        if (user) navigate('/dashboard');
+        if (user) {
+          // Sync localStorage if a session exists but profile is missing
+          localStorage.setItem('user_profile', JSON.stringify(user));
+          navigate('/dashboard');
+        }
       } catch (err) {
         console.log('No active session found.');
       } finally {
@@ -32,7 +34,13 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await loginUser(credentials);
+      // 1. Capture the user data from the login service
+      const userData = await loginUser(credentials);
+      
+      // 2. Save it to localStorage for the StudentDashboard to read
+      localStorage.setItem('user_profile', JSON.stringify(userData));
+      
+      // 3. Navigate to dashboard
       navigate('/dashboard');
     } catch (err: any) {
       alert(err.message || "Login failed");
@@ -63,19 +71,18 @@ const Login: React.FC = () => {
         {/* Social Logins */}
         <div className="grid grid-cols-2 gap-4 mb-8">
           <button 
+            type="button"
             onClick={() => handleSocialLogin('google')}
             className="flex items-center justify-center gap-2 py-3 px-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all font-bold text-sm"
           >
-            {/* <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" className="w-5 h-5 object-contain" alt="Google" /> */}
-            {/* <span className="text-2xl"><FcGoogle /></span> */}
             <FcGoogle className="text-xl" />
             Google
           </button>
           <button 
+            type="button"
             onClick={() => handleSocialLogin('facebook')}
             className="flex items-center justify-center gap-2 py-3 px-4 border border-gray-200 rounded-xl hover:bg-gray-50 transition-all font-bold text-sm"
           >
-            {/* <span className="text-blue-600 text-xl">f</span> */}
             <FaFacebook className="text-xl text-[#1877F2]" />
             Facebook
           </button>
@@ -119,7 +126,7 @@ const Login: React.FC = () => {
 
           <button 
             type="submit" 
-            className="w-full py-4 mt-2 bg-elf-teal text-white rounded-2xl font-black text-lg shadow-lg shadow-elf-teal/30 hover:bg-elf-teal-hover hover:-translate-y-0.5 transition-all active:scale-[0.98]"
+            className="w-full py-4 mt-2 bg-elf-teal text-white rounded-2xl font-black text-lg shadow-lg shadow-elf-teal/30 hover:bg-[#2c8d88] hover:-translate-y-0.5 transition-all active:scale-[0.98]"
           >
             Login
           </button>
