@@ -1,4 +1,4 @@
-import { Controller, Patch, Param, Get, UseGuards } from '@nestjs/common';
+import { Controller, Patch, Param, Get, UseGuards, Post } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'; // Assuming you have this
 import { RolesGuard } from '../auth/guards/roles.guard'; // Assuming you have this
@@ -27,7 +27,8 @@ export class PaymentsController {
   @Patch('verify/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
+  @Post(':id/verify')
   async verify(@Param('id') id: string) {
-    return this.paymentsService.verifySchoolPayment(id);
+    return this.paymentsService.verifyPayment(id);
   }
 }

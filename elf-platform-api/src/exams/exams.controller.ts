@@ -16,7 +16,7 @@ export class ExamsController {
   }
 
   /**
-   * ALL USERS: Get list of available exams
+   * ALL USER: Get list of available exams
    * Filtered by status (Active/Upcoming) on the service layer
    */
   @Get()

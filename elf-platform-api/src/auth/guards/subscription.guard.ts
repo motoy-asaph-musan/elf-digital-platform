@@ -28,7 +28,7 @@ export class SubscriptionGuard implements CanActivate {
             { user: { schoolId: user.schoolId } }
           ]
         },
-        active: true,
+        status: 'ACTIVE',
         endDate: { gte: new Date() }, // Must not be expired
       },
     });

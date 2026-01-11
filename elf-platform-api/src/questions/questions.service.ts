@@ -1,25 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import 'multer'; // Add this to help TS find the types
 
 @Injectable()
 export class QuestionsService {
   constructor(private prisma: PrismaService) {}
 
-  async createQuestion(examId: string, data: any, mediaFile?: Express.Multer.File) {
-    let mediaUrl = null;
-    
-    // If an image/video was uploaded via the MediaController, 
-    // we would have the URL here to save to the DB.
-    if (data.mediaUrl) {
-      mediaUrl = data.mediaUrl;
-    }
+  // Standardize these names to match the controller calls
+  async create(data: any) {
+    return this.prisma.question.create({ data });
+  }
 
-    return this.prisma.question.create({
-      data: {
-        ...data,
-        examId,
-        mediaUrl,
-      },
-    });
+  async createMany(examId: string, questions: any[]) {
+    const data = questions.map(q => ({ ...q, examId }));
+    return this.prisma.question.createMany({ data });
+  }
+
+  async findAllByExam(examId: string) {
+    return this.prisma.question.findMany({ where: { examId } });
+  }
+
+  async update(id: string, data: any) {
+    return this.prisma.question.update({ where: { id }, data });
+  }
+
+  async remove(id: string) {
+    return this.prisma.question.delete({ where: { id } });
   }
 }

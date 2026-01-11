@@ -1,24 +1,27 @@
-async updateProgress(submissionId: string, studentId: string, answers: any) {
-  const submission = await this.prisma.submission.findUnique({
-    where: { id: submissionId }
-  });
+import { Injectable, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
 
-  // Security: Ensure the student owns this submission
-  if (submission.studentId !== studentId) {
-    throw new ForbiddenException("Unauthorized submission");
-  }
+@Injectable()
+export class SubmissionsService {
+  constructor(private prisma: PrismaService) {}
 
-  // Check if time has already expired server-side
-  if (new Date() > submission.deadlineAt) {
-    await this.prisma.submission.update({
-      where: { id: submissionId },
-      data: { status: 'EXPIRED' }
+  async updateProgress(submissionId: string, studentId: string, answers: any) {
+    const session = await this.prisma.examSession.findUnique({
+      where: { id: submissionId }
     });
-    throw new BadRequestException("Time has expired. Answers locked.");
-  }
 
-  return this.prisma.submission.update({
-    where: { id: submissionId },
-    data: { answers: answers } // Save partial progress
-  });
+    if (!session) throw new BadRequestException("Session not found");
+    if (session.studentId !== studentId) {
+      throw new ForbiddenException("Unauthorized submission");
+    }
+
+    if (session.status !== 'IN_PROGRESS') {
+      throw new BadRequestException("Time has expired. Answers locked.");
+    }
+
+    return await this.prisma.examSession.update({
+      where: { id: submissionId },
+      data: { currentAnswers: answers },
+    });
+  }
 }

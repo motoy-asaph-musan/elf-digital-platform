@@ -1,4 +1,4 @@
-import { SubmissionStatus } from '@prisma/client';
+import { SessionStatus } from '@prisma/client';
 
 export class ExamSession {
   id: string;
@@ -19,7 +19,7 @@ export class ExamSession {
   /** * Current status: IN_PROGRESS, SUBMITTED, or EXPIRED.
    * EXPIRED is set by the server if now > deadlineAt.
    */
-  status: SubmissionStatus;
+  status: SessionStatus;
 
   /** * JSON field containing the student's current answers.
    * Format: { "questionId": "answerValue" }

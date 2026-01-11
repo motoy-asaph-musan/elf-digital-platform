@@ -23,7 +23,7 @@ import ExamPage from './pages/ExamPage';
 import ResultsPage from './pages/ResultsPage';
 import Donate from './pages/Donate';
 import Subscribe from './pages/Subscribe';
-import UsersList from './pages/UsersList';
+import UserList from './pages/UserList';
 import PaymentSuccess from './pages/PaymentSuccess';
 import ForgotPassword from './pages/ForgotPassword';
 import PrivacyPolicy from './pages/PrivacyPolicy'; // You'll need to create this
@@ -79,7 +79,7 @@ function App() {
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
             <Route path="/donate" element={<ProtectedRoute><Donate /></ProtectedRoute>} />
-            <Route path="/users" element={<ProtectedRoute><UsersList /></ProtectedRoute>} />
+            <Route path="/user" element={<ProtectedRoute><UserList /></ProtectedRoute>} />
             <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
             <Route path="/subscribe" element={<ProtectedRoute><Subscribe /></ProtectedRoute>} />
 

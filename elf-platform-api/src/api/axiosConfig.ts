@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
   // Use the Vite environment variable we set in Render
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
+  baseURL: process.env.VITE_API_URL || 'http://localhost:3000',
   headers: {
     'Content-Type': 'application/json',
   },

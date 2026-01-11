@@ -9,29 +9,29 @@ import {
   Query,
   UseGuards
 } from '@nestjs/common';
-import { UsersService } from './users.service';
+import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
-@Controller('users')
-export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+@Controller('user')
+export class UserController {
+  constructor(private readonly userService: UserService) {}
 
   /**
    * Register a new user (Student or School)
    */
   @Post('register')
   create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+    return this.userService.create(createUserDto);
   }
 
   /**
-   * ADMIN ONLY: Get all users, with optional role filtering
-   * Example: /users?role=STUDENT
+   * ADMIN ONLY: Get all user, with optional role filtering
+   * Example: /user?role=STUDENT
    */
   @Get()
   findAll(@Query('role') role?: string) {
-    return this.usersService.findAll(role);
+    return this.userService.findAll(role);
   }
 
   /**
@@ -39,7 +39,7 @@ export class UsersController {
    */
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.usersService.findOne(id);
+    return this.userService.findOne(id);
   }
 
   /**
@@ -47,7 +47,7 @@ export class UsersController {
    */
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(id, updateUserDto);
+    return this.userService.update(id, updateUserDto);
   }
 
   /**
@@ -55,6 +55,6 @@ export class UsersController {
    */
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
+    return this.userService.remove(id);
   }
 }

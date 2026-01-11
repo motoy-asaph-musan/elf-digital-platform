@@ -9,25 +9,25 @@ interface User {
   role: string;
 }
 
-const UsersList: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([]);
+const UserList: React.FC = () => {
+  const [user, setUser] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadUsers = async () => {
+    const loadUser = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:3000/users', {
+        const response = await axios.get('http://localhost:3000/user', {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setUsers(response.data);
+        setUser(response.data);
       } catch (err) {
-        console.error("Failed to fetch users", err);
+        console.error("Failed to fetch user", err);
       } finally {
         setLoading(false);
       }
     };
-    loadUsers();
+    loadUser();
   }, []);
 
   if (loading) return <div style={{ padding: '40px', textAlign: 'center' }}>Loading Registry...</div>;
@@ -36,7 +36,7 @@ const UsersList: React.FC = () => {
     <div style={styles.container}>
       <div style={styles.headerRow}>
         <h2 style={styles.title}>Student & Teacher Registry</h2>
-        <span style={styles.countBadge}>{users.length} Total Members</span>
+        <span style={styles.countBadge}>{user.length} Total Members</span>
       </div>
 
       <div style={styles.tableWrapper}>
@@ -51,7 +51,7 @@ const UsersList: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
+            {user.map((user) => (
               <tr key={user.id} style={styles.tr}>
                 <td style={styles.td}><strong>{user.name}</strong></td>
                 <td style={styles.td}>{user.email}</td>
@@ -86,4 +86,4 @@ const styles: { [key: string]: React.CSSProperties } = {
   statusDot: { display: 'inline-block', width: '8px', height: '8px', backgroundColor: '#48bb78', borderRadius: '50%', marginRight: '5px' }
 };
 
-export default UsersList;
+export default UserList;

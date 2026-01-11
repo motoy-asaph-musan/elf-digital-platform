@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { createUser } from '../services/usersService';
+import { createUser } from '../services/Service';
 
 const CreateUserForm = ({ onUserCreated }) => {
   const [formData, setFormData] = useState({ name: '', email: '', role: 'STUDENT' });

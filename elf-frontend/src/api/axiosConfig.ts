@@ -1,20 +1,28 @@
 import axios from 'axios';
 
 const api = axios.create({
-  // Use the Vite environment variable we set in Render
+  // Vite uses import.meta.env for frontend variables
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Optional: Add a request interceptor to attach JWT tokens automatically
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token && config.headers) {
-    config.headers.Authorization = `Bearer ${token}`;
+// Interceptor to attach the JWT token
+api.interceptors.request.use(
+  (config) => {
+    // Check if window is defined (prevents errors during builds)
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token');
+      if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
-  return config;
-});
+);
 
 export default api;

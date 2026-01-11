@@ -10,17 +10,18 @@ datasource db {
 // --- USER & AUTH SECTION ---
 
 model User {
-  id            String    @id @default(uuid()) // Changed to String/UUID for consistency
-  email         String    @unique
-  name          String?
-  password      String
-  role          Role      @default(STUDENT)
-  createdAt     DateTime  @default(now())
+  id             String    @id @default(uuid())
+  email          String    @unique
+  phone          String?   @unique // Added for AuthService logic
+  name           String?
+  password       String
+  role           Role      @default(STUDENT)
+  createdAt      DateTime  @default(now())
   
   // Relations
   studentProfile Student?
   schoolId       String?
-  school         School?  @relation("SchoolToUsers", fields: [schoolId], references: [id])
+  school         School?   @relation("SchoolToUser", fields: [schoolId], references: [id])
   payments       Payment[]
 }
 
@@ -38,32 +39,32 @@ model School {
   name             String
   address          String
   region           String?   // Central, Eastern, Western, Northern
-  contactPhone     String?   // Added: To know where to send the SMS
-  schoolCode       String?   @unique // Added: The 6-digit access code
+  contactPhone     String?   
+  schoolCode       String?   @unique // The 6-digit access code we generate
   isRegistered     Boolean   @default(false)
   registrationDate DateTime?
   
   // Relations
-  users            User[]    @relation("SchoolToUsers")
+  user            User[]    @relation("SchoolToUser")
   payments         Payment[]
 }
 
 // --- EXAM & CONTENT SECTION ---
 
 model Exam {
-  id              String       @id @default(uuid())
+  id              String        @id @default(uuid())
   title           String
   description     String?
   durationMinutes Int
   category        ExamCategory
   startTime       DateTime
   endTime         DateTime
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   // Relations
   questions       Question[]
-  sessions        ExamSession[]
+  session        ExamSession[]
 }
 
 enum ExamCategory {
@@ -80,14 +81,13 @@ model Question {
   points        Int          @default(1)
   type          QuestionType @default(MULTIPLE_CHOICE)
   
-  // For Multiple Choice
-  options       Json?        // ["Option A", "Option B"]
+  options       Json?        // Stores ["A", "B", "C"]
   correctAnswer String
 
   // Relations
   examId        String
   exam          Exam         @relation(fields: [examId], references: [id], onDelete: Cascade)
-  answers       Answer[]     // Added missing back-relation
+  answers       Answer[]
 }
 
 enum QuestionType {
@@ -109,7 +109,7 @@ model Student {
   isEligible  Boolean  @default(true)
   
   // Relations
-  sessions    ExamSession[]
+  session    ExamSession[]
 }
 
 model ExamSession {
@@ -121,14 +121,21 @@ model ExamSession {
   startedAt      DateTime         @default(now())
   deadlineAt     DateTime
   submittedAt    DateTime?
-  status         SubmissionStatus @default(IN_PROGRESS)
+  status         SessionStatus    @default(IN_PROGRESS)
   score          Int?
+  currentAnswers Json?            // Added: To track progress before final submission
   deviceId       String?
 
   // Relations
   responses      Answer[]
 
   @@unique([examId, studentId])
+}
+
+enum SessionStatus {
+  IN_PROGRESS
+  SUBMITTED
+  EXPIRED
 }
 
 model Answer {
@@ -150,13 +157,14 @@ model Answer {
 
 model Payment {
   id            String          @id @default(uuid())
+  attempts      Int      @default(0)  // Add this line if missing
   amount        Float
   currency      String          @default("UGX")
   purpose       String          // "SCHOOL_REG", "CONTEST_FEE", "DONATION"
   status        PaymentStatus   @default(PENDING)
   provider      PaymentProvider
-  reference     String          @unique // External ID (Bank Ref or Mobile Money Ref)
-  whatsappRef   String?         // Reference provided via WhatsApp for manual verification
+  reference     String          @unique 
+  whatsappRef   String?         
   
   // Relations
   userId        String?
@@ -176,13 +184,13 @@ enum PaymentProvider {
   AIRTEL
   VISA
   FLUTTERWAVE
-  BANK_DEPOSIT // Added for manual ELF verification
+  BANK_DEPOSIT
 }
 
 enum PaymentStatus {
   PENDING
   SUCCESS
-  VERIFIED // For manual admin verification
+  VERIFIED 
   FAILED
 }
 
@@ -195,17 +203,17 @@ model Donation {
 }
 
 model Subscription {
-  id        String   @id @default(uuid())
-  paymentId String   @unique
-  payment   Payment  @relation(fields: [paymentId], references: [id])
+  id        String             @id @default(uuid())
+  paymentId String             @unique
+  payment   Payment            @relation(fields: [paymentId], references: [id])
   plan      String
   startDate DateTime
   endDate   DateTime
-  active    Boolean  @default(true)
+  status    SubscriptionStatus @default(ACTIVE)
 }
 
-enum SubmissionStatus {
-  IN_PROGRESS
-  SUBMITTED
+enum SubscriptionStatus {
+  ACTIVE
   EXPIRED
+  CANCELLED
 }

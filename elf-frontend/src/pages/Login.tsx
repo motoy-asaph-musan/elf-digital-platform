@@ -14,9 +14,14 @@ const Login: React.FC = () => {
       try {
         const user = await fetchUser();
         if (user) {
-          // Sync localStorage if a session exists but profile is missing
           localStorage.setItem('user_profile', JSON.stringify(user));
-          navigate('/dashboard');
+          localStorage.setItem('role', user.role);
+          
+          if (user.role === 'ADMIN') {
+            navigate('/admin/verifications');
+          } else {
+            navigate('/dashboard');
+          }
         }
       } catch (err) {
         console.log('No active session found.');
@@ -34,22 +39,25 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // 1. Capture the user data from the login service
-      const userData = await loginUser(credentials);
+      const data = await loginUser(credentials);
       
-      // 2. Save it to localStorage for the StudentDashboard to read
-      localStorage.setItem('user_profile', JSON.stringify(userData));
+      localStorage.setItem('token', data.access_token);
+      localStorage.setItem('role', data.user.role);
+      localStorage.setItem('user_profile', JSON.stringify(data.user));
       
-      // 3. Navigate to dashboard
-      navigate('/dashboard');
+      if (data.user.role === 'ADMIN') {
+        navigate('/admin/verifications');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err: any) {
-      alert(err.message || "Login failed");
+      alert(err.message || "Login failed. Please check your credentials.");
     }
   };
 
   if (loading) {
     return (
-      <div className="h-screen bg-elf-gray flex flex-col justify-center items-center">
+      <div className="h-screen bg-gray-50 flex flex-col justify-center items-center">
         <div className="w-10 h-10 border-4 border-gray-200 border-t-elf-teal rounded-full animate-spin"></div>
       </div>
     );
@@ -58,8 +66,6 @@ const Login: React.FC = () => {
   return (
     <div className="w-full flex justify-center items-center py-20 px-5 font-inter bg-gray-50">
       <div className="w-full max-w-[440px] bg-white rounded-[32px] p-8 md:p-10 shadow-2xl border border-gray-100 text-center">
-        
-        {/* Logo Area */}
         <div className="mb-8">
           <div className="w-16 h-16 bg-elf-teal rounded-2xl mx-auto mb-4 flex justify-center items-center text-white font-black text-xl shadow-lg shadow-elf-teal/20">
             ELF
@@ -68,7 +74,6 @@ const Login: React.FC = () => {
           <p className="text-gray-500 text-sm mt-1">Access the ELF Digital Platform</p>
         </div>
 
-        {/* Social Logins */}
         <div className="grid grid-cols-2 gap-4 mb-8">
           <button 
             type="button"
@@ -93,7 +98,6 @@ const Login: React.FC = () => {
           <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2 text-gray-400 font-bold">Or continue with</span></div>
         </div>
 
-        {/* Form Container */}
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="text-left">
             <label className="text-xs font-bold uppercase text-gray-600 ml-1">Email or Phone Number</label>
@@ -132,7 +136,6 @@ const Login: React.FC = () => {
           </button>
         </form>
 
-        {/* Footer Links */}
         <div className="mt-8 border-t border-gray-100 pt-6">
           <p className="text-sm text-gray-500 font-medium">
             Don't have an account? <Link to="/register" className="text-elf-teal font-black hover:underline ml-1">Register Now</Link>

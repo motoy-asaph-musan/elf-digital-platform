@@ -31,7 +31,7 @@ const Navbar: React.FC = () => {
         {/* Admin specific links */}
         {user.role === 'ADMIN' && (
           <>
-            <li><Link to="/users" className="no-underline text-gray-600 font-semibold text-sm hover:text-elf-teal transition-colors">Users</Link></li>
+            <li><Link to="/user" className="no-underline text-gray-600 font-semibold text-sm hover:text-elf-teal transition-colors">User</Link></li>
             <li><Link to="/admin/verifications" className="no-underline text-gray-600 font-semibold text-sm hover:text-elf-teal transition-colors text-amber-600">Admin Panel</Link></li>
           </>
         )}
